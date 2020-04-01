@@ -308,7 +308,7 @@ public abstract class AuthorizingRealm extends AuthenticatingRealm
      * @return the authorization information for the account associated with the specified {@code principals},
      *         or {@code null} if no account could be found.
      */
-    protected AuthorizationInfo getAuthorizationInfo(PrincipalCollection principals) {
+    public AuthorizationInfo getAuthorizationInfo(PrincipalCollection principals) {
 
         if (principals == null) {
             return null;
@@ -467,7 +467,7 @@ public abstract class AuthorizingRealm extends AuthenticatingRealm
     }
 
     //visibility changed from private to protected per SHIRO-332
-    protected boolean isPermitted(Permission permission, AuthorizationInfo info) {
+    public boolean isPermitted(Permission permission, AuthorizationInfo info) {
         Collection<Permission> perms = getPermissions(info);
         if (perms != null && !perms.isEmpty()) {
             for (Permission perm : perms) {

@@ -18,10 +18,12 @@
  */
 package org.apache.shiro.authz;
 
+import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authz.permission.PermissionResolver;
 import org.apache.shiro.authz.permission.PermissionResolverAware;
 import org.apache.shiro.authz.permission.RolePermissionResolver;
 import org.apache.shiro.authz.permission.RolePermissionResolverAware;
+import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.subject.PrincipalCollection;
 
@@ -267,16 +269,30 @@ public class ModularRealmAuthorizer implements Authorizer, PermissionResolverAwa
      */
     public boolean[] isPermitted(PrincipalCollection principals, List<Permission> permissions) {
         assertRealmsConfigured();
-        if (permissions != null && !permissions.isEmpty()) {
-            boolean[] isPermitted = new boolean[permissions.size()];
-            int i = 0;
-            for (Permission p : permissions) {
-                isPermitted[i++] = isPermitted(principals, p);
+        boolean[] results = new boolean[permissions.size()];
+        for (Realm realm : getRealms()) {
+            if (realm instanceof AuthorizingRealm) {
+                //can
+                // - getAuthorizationInfo(PrincipalCollection principals)
+                // - isPermitted(Permission permission, AuthorizationInfo info)
+                //be moved to Authorizer interface?
+                //otherwise can work only for the AuthorizingRealm instances
+                //so for other instances?
+                boolean allTrue = true;
+                AuthorizingRealm authRealm = ((AuthorizingRealm) realm);
+                AuthorizationInfo authorizationInfo = authRealm.getAuthorizationInfo(principals);
+                for (int j=0; j<permissions.size(); j++) {
+                    if (!results[j]) {
+                        results[j] = results[j] || authRealm.isPermitted(permissions.get(j), authorizationInfo);
+                        allTrue = allTrue && results[j];
+                    }
+                }
+                if (allTrue) {
+                    break;
+                }
             }
-            return isPermitted;
         }
-
-        return new boolean[0];
+        return results;
     }
 
     /**
