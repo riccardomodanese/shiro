@@ -18,7 +18,6 @@
  */
 package org.apache.shiro.authz;
 
-import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authz.permission.PermissionResolver;
 import org.apache.shiro.authz.permission.PermissionResolverAware;
 import org.apache.shiro.authz.permission.RolePermissionResolver;
@@ -283,8 +282,8 @@ public class ModularRealmAuthorizer implements Authorizer, PermissionResolverAwa
                 AuthorizationInfo authorizationInfo = authRealm.getAuthorizationInfo(principals);
                 for (int j=0; j<permissions.size(); j++) {
                     if (!results[j]) {
-                        results[j] = results[j] || authRealm.isPermitted(permissions.get(j), authorizationInfo);
-                        allTrue = allTrue && results[j];
+                        results[j] = authRealm.isPermitted(permissions.get(j), authorizationInfo);
+                        allTrue &= results[j];
                     }
                 }
                 if (allTrue) {
